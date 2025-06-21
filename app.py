@@ -2,7 +2,9 @@ import streamlit as st
 import requests
 import base64 # Still useful if we want to send files, but text extraction now happens upfront
 import io # Needed for handling file-like objects
-
+sidebar_logo= 'footer-logo1.png'
+# Display the logo in the sidebar
+st.sidebar.image(sidebar_logo, use_container_width =True)
 # Libraries for PDF and DOCX parsing in the frontend
 try:
     import pypdf # For PDF parsing
