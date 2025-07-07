@@ -1,142 +1,150 @@
+# app.py
 import streamlit as st
-import requests
-import base64 # Still useful if we want to send files, but text extraction now happens upfront
-import io # Needed for handling file-like objects
-sidebar_logo= 'footer-logo1.png'
-# Display the logo in the sidebar
-st.sidebar.image(sidebar_logo, use_container_width =True)
-# Libraries for PDF and DOCX parsing in the frontend
-try:
-    import pypdf # For PDF parsing
-except ImportError:
-    st.error("Please install pypdf: pip install pypdf")
-    pypdf = None
+#import auth
+import analyzer_ui
 
-try:
-    from docx import Document # For DOCX parsing
-except ImportError:
-    st.error("Please install python-docx: pip install python-docx")
-    Document = None
+def main():
+    """
+    Main function for the Streamlit application.
+    Handles user authentication flow using Google Identity Platform.
+    """
 
+    st.set_page_config(page_title="Secure Streamlit App", page_icon="🔒", layout="centered")
 
-# Streamlit app to analyze resumes using a GCP function
-# IMPORTANT: Your GCP function at this URL will now primarily receive plain text,
-# as file parsing (PDF/DOCX) is handled in the frontend.
-GCP_FUNCTION_URL = 'https://agent-ops-911008082076.us-east1.run.app/analyze'
+    st.markdown(
+        """
+        <style>
+        .stButton>button {
+            background-color: #4285F4; /* Google Blue */
+            color: white;
+            border-radius: 8px;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .stButton>button:hover {
+            background-color: #357ae8; /* Darker Google Blue on hover */
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+        .stButton>button:active {
+            background-color: #2a65cc;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transform: translateY(0);
+        }
+        .st-emotion-cache-1r6dm7f { /* This targets the sidebar button container */
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+        .st-emotion-cache-1r6dm7f button {
+            width: 80%; /* Adjust width for sidebar buttons */
+        }
+        .container {
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+            background-color: #ffffff;
+        }
+        .header-text {
+            color: #333;
+            font-size: 2.2em;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .sub-header-text {
+            color: #555;
+            font-size: 1.2em;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .info-box {
+            background-color: #e6f7ff;
+            border-left: 5px solid #2196F3;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            color: #333;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
-st.set_page_config(layout="centered", page_title="Advanced Resume Analyzer")
+    # Check if the user is logged in using Streamlit's experimental_user API
+    # Note: st.experimental_user might become st.user in future Streamlit versions
+    if not st.user.is_logged_in:
+        st.markdown("<h1 class='header-text'>🔒 Advanced Resume & Job Description Analyzer</h1>", unsafe_allow_html=True)
+        st.markdown("<p class='sub-header-text'>Please log in with your Google account to access the content.</p>", unsafe_allow_html=True)
 
-st.title("📄 Advanced Resume & Job Description Analyzer")
-st.markdown("Upload your resume and a job description to get an instant analysis!")
+        st.markdown("<div style='text-align: center; margin-top: 40px;'>", unsafe_allow_html=True)
+        # Display a login button for Google.
+        # The string "google" refers to the [auth.google] section in .streamlit/secrets.toml
+        if st.button("Login with Google"):
+            st.login("google")
+        st.markdown("</div>", unsafe_allow_html=True)
 
-# --- Helper function to extract text from PDF ---
-def extract_text_from_pdf(file_bytes):
-    """Extracts text from a PDF file."""
-    if pypdf is None:
-        st.error("pypdf library not found. Cannot process PDF files.")
-        return None
-    try:
-        reader = pypdf.PdfReader(io.BytesIO(file_bytes))
-        text = ""
-        for page in reader.pages:
-            text += page.extract_text() or "" # Handle potential None from extract_text()
-        return text
-    except Exception as e:
-        st.error(f"Error reading PDF file: {e}")
-        return None
+        st.markdown(
+            """
+            <div class='info-box'>
+                <strong>Note:</strong> This application uses Google Identity Platform for secure authentication. 
+                Your credentials are handled directly by Google.
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
-# --- Helper function to extract text from DOCX ---
-def extract_text_from_docx(file_bytes):
-    """Extracts text from a DOCX file."""
-    if Document is None:
-        st.error("python-docx library not found. Cannot process DOCX files.")
-        return None
-    try:
-        doc = Document(io.BytesIO(file_bytes))
-        text = ""
-        for paragraph in doc.paragraphs:
-            text += paragraph.text + "\n"
-        return text
-    except Exception as e:
-        st.error(f"Error reading DOCX file: {e}")
-        return None
+        # Stop further execution of the script if the user is not logged in
+        st.stop()
 
-# --- Resume Upload Section ---
-st.header("Upload Your Resume")
-resume_file = st.file_uploader("Choose a PDF or Word file for your Resume", type=["pdf", "docx"], key="resume_upload")
-resume_text_input = st.text_area("Or paste your resume text here (overrides file upload)", height=250, key="resume_text_area")
+    # --- Code below this line will only execute if the user is authenticated ---
 
-resume_content_to_send = ""
-if resume_text_input: # Pasted text takes precedence
-    resume_content_to_send = resume_text_input
-    st.write("Using pasted text for resume analysis.")
-elif resume_file:
-    file_bytes = resume_file.read()
-    if resume_file.type == "application/pdf":
-        resume_content_to_send = extract_text_from_pdf(file_bytes)
-        if resume_content_to_send:
-            st.success("PDF resume text extracted successfully!")
-        else:
-            st.error("Failed to extract text from PDF resume. Please try pasting text or another file.")
-    elif resume_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-        resume_content_to_send = extract_text_from_docx(file_bytes)
-        if resume_content_to_send:
-            st.success("Word (DOCX) resume text extracted successfully!")
-        else:
-            st.error("Failed to extract text from DOCX resume. Please try pasting text or another file.")
+    # Retrieve user information from the session
+    user = st.user
+
+    # Display user information in the sidebar
+    st.sidebar.markdown(f"**👋 Hello, {user.name or user.email}!**")
+    if user.email:
+        st.sidebar.write(f"Email: {user.email}")
+    if user.get("picture"): # 'picture' claim is often available for profile scope
+        st.sidebar.image(user.picture, caption="Profile Picture", use_container_width =True, clamp=True)
+
+    # Add a logout button in the sidebar
+    if st.sidebar.button("Logout"):
+        st.logout()
+        st.info("You have been logged out successfully.")
+        st.rerun() # Rerun the app to show the login page
+    
+    # Main content for authenticated users
+    
+    analyzer_ui.main_analyzer_app()
+
+    # Example of conditional content based on user email (simple authorization)
+    # Replace "your.admin.email@gmail.com" with an actual email you want to designate as admin
+    if user.email == "vikalp.dongre@gmail.com":
+        st.markdown(
+            """
+            <div class='info-box' style='background-color: #d4edda; border-color: #28a745;'>
+                <strong>Admin Privileges Detected!</strong> This section is only visible to administrators.
+                You could add links to admin panels, user management, or system settings here.
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
     else:
-        # Fallback for unexpected file types if any
-        resume_content_to_send = file_bytes.decode('utf-8')
-        st.info("Using uploaded file content directly (assumed text).")
-    st.write("Using uploaded file (converted to text) for resume analysis.")
-else:
-    st.warning("Please upload a resume file or paste resume text.")
+        st.markdown(
+            """
+            <div class='info-box' style='background-color: #fff3cd; border-color: #ffc107;'>
+                You are logged in as a standard user. Some administrative features may be restricted.
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
-# --- Job Description Upload Section ---
-st.header("Upload Job Description")
-jd_file = st.file_uploader("Choose a PDF or Word file for Job Description", type=["pdf", "docx"], key="jd_upload")
-jd_text_input = st.text_area("Or paste job description text here (overrides file upload)", height=200, key="jd_text_area")
-
-jd_content_to_send = ""
-if jd_text_input: # Pasted text takes precedence
-    jd_content_to_send = jd_text_input
-    st.write("Using pasted text for job description.")
-elif jd_file:
-    file_bytes = jd_file.read()
-    if jd_file.type == "application/pdf":
-        jd_content_to_send = extract_text_from_pdf(file_bytes)
-        if jd_content_to_send:
-            st.success("PDF job description text extracted successfully!")
-        else:
-            st.error("Failed to extract text from PDF job description. Please try pasting text or another file.")
-    elif jd_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-        jd_content_to_send = extract_text_from_docx(file_bytes)
-        if jd_content_to_send:
-            st.success("Word (DOCX) job description text extracted successfully!")
-        else:
-            st.error("Failed to extract text from DOCX job description. Please try pasting text or another file.")
-    else:
-        # Fallback for unexpected file types if any
-        jd_content_to_send = file_bytes.decode('utf-8')
-        st.info("Using uploaded file content directly (assumed text).")
-    st.write("Using uploaded file (converted to text) for job description.")
-else:
-    st.warning("Please upload a job description file or paste job description text.")
-
-# --- Analyze Button ---
-if st.button("Analyze", type="primary"):
-    if not (resume_content_to_send and jd_content_to_send):
-        st.error("Please provide both resume and job description before analyzing.")
-    else:
-        with st.spinner("Analyzing your resume... This may take a moment."):
-                response = requests.post(GCP_FUNCTION_URL, json={"resume": resume_content_to_send, "job_description": jd_content_to_send})
-                st.write(response.status_code)
-                if response.status_code == 200:
-                    analysis = response.json().get("analysis", "No analysis returned.")
-                    st.write(analysis)
-                else:
-                    error_message = response.json().get("error", "An error occurred.")
-                    st.error(f"Error: {error_message}")
-                st.write("Analysis complete. Check the output above.", response.status_code)
-
-
+if __name__ == "__main__":
+    main()
