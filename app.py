@@ -2,6 +2,10 @@
 import streamlit as st
 #import auth
 import analyzer_ui
+import os
+ST_AUTH_GOOGLE_CLIENT_SECRET =  os.getenv("ST_AUTH_GOOGLE_CLIENT_SECRET")
+
+
 
 def main():
     """
