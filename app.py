@@ -88,7 +88,7 @@ def main():
 
     # Check if the user is logged in using Streamlit's experimental_user API
     # Note: st.experimental_user might become st.user in future Streamlit versions
-    if 1==1:# st.user.is_logged_in:
+    if hasattr(st.user, "is_logged_in"):
         st.markdown("<h1 class='header-text'>🔒 Advanced Resume & Job Description Analyzer</h1>", unsafe_allow_html=True)
         st.markdown("<p class='sub-header-text'>Please log in with your Google account to access the content.</p>", unsafe_allow_html=True)
 
