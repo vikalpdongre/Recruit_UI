@@ -1,11 +1,7 @@
 # app.py
 import streamlit as st
+#import auth
 import analyzer_ui
-import os
-
-
-
-
 
 def main():
     """
@@ -13,7 +9,7 @@ def main():
     Handles user authentication flow using Google Identity Platform.
     """
 
-    st.set_page_config(page_title="AR&JD Analyzer App", page_icon="🔒", layout="centered")
+    st.set_page_config(page_title="Secure Streamlit App", page_icon="🔒", layout="centered")
 
     st.markdown(
         """
@@ -80,10 +76,9 @@ def main():
         unsafe_allow_html=True
     )
 
-    # Check if the user is logged in using Streamlit's experimental_user API
-    # Note: st.experimental_user might become st.user in future Streamlit versions
-    st.user = st.get_user()  # This retrieves the user information if logged in
-    if not st.user :
+
+    # Check if the user is logged in using Streamlit's use API
+    if not st.user.is_logged_in: #do check if the user is logged in
         st.markdown("<h1 class='header-text'>🔒 Advanced Resume & Job Description Analyzer</h1>", unsafe_allow_html=True)
         st.markdown("<p class='sub-header-text'>Please log in with your Google account to access the content.</p>", unsafe_allow_html=True)
 
@@ -108,48 +103,48 @@ def main():
         st.stop()
 
     # --- Code below this line will only execute if the user is authenticated ---
-
-    # Retrieve user information from the session
-    user = st.user
-
-    # Display user information in the sidebar
-    st.sidebar.markdown(f"**👋 Hello, {user.name or user.email}!**")
-    if user.email:
-        st.sidebar.write(f"Email: {user.email}")
-    if user.get("picture"): # 'picture' claim is often available for profile scope
-        st.sidebar.image(user.picture, caption="Profile Picture", use_container_width =True, clamp=True)
-
-    # Add a logout button in the sidebar
-    if st.sidebar.button("Logout"):
-        st.logout()
-        st.info("You have been logged out successfully.")
-        st.rerun() # Rerun the app to show the login page
-    
-    # Main content for authenticated users
-    
-    analyzer_ui.main_analyzer_app()
-
-    # Example of conditional content based on user email (simple authorization)
-    # Replace "your.admin.email@gmail.com" with an actual email you want to designate as admin
-    if user.email == "vikalp.dongre@gmail.com":
-        st.markdown(
-            """
-            <div class='info-box' style='background-color: #d4edda; border-color: #28a745;'>
-                <strong>Admin Privileges Detected!</strong> This section is only visible to administrators.
-                You could add links to admin panels, user management, or system settings here.
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
     else:
-        st.markdown(
-            """
-            <div class='info-box' style='background-color: #fff3cd; border-color: #ffc107;'>
-                You are logged in as a standard user. Some administrative features may be restricted.
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        # Retrieve user information from the session
+        user = st.user
+
+        # Display user information in the sidebar
+        st.sidebar.markdown(f"**👋 Hello, {user.name or user.email}!**")
+        if user.email:
+            st.sidebar.write(f"Email: {user.email}")
+        if user.get("picture"): # 'picture' claim is often available for profile scope
+            st.sidebar.image(user.picture, caption="Profile Picture", use_container_width =True, clamp=True)
+
+        # Add a logout button in the sidebar
+        if st.sidebar.button("Logout"):
+            st.logout()
+            st.info("You have been logged out successfully.")
+            st.rerun() # Rerun the app to show the login page
+        
+        # Main content for authenticated users
+        
+        analyzer_ui.main_analyzer_app()
+
+        # Example of conditional content based on user email (simple authorization)
+        # Replace "your.admin.email@gmail.com" with an actual email you want to designate as admin
+        if user.email == "vikalp.dongre@gmail.com":
+            st.markdown(
+                """
+                <div class='info-box' style='background-color: #d4edda; border-color: #28a745;'>
+                    <strong>Admin Privileges Detected!</strong> This section is only visible to administrators.
+                    You could add links to admin panels, user management, or system settings here.
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+        else:
+            st.markdown(
+                """
+                <div class='info-box' style='background-color: #fff3cd; border-color: #ffc107;'>
+                    You are logged in as a standard user. Some administrative features may be restricted.
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
 if __name__ == "__main__":
     main()
