@@ -1,13 +1,7 @@
 # app.py
 import streamlit as st
-#import auth
 import analyzer_ui
 import os
-ST_AUTH_GOOGLE_CLIENT_SECRET =  os.getenv("ST_AUTH_GOOGLE_CLIENT_SECRET")
-ST_AUTH_COOKIE_SECRET =  os.getenv("ST_AUTH_COOKIE_SECRET")
-ST_AUTH_GOOGLE_CLIENT_ID =  os.getenv("ST_AUTH_GOOGLE_CLIENT_ID")
-ST_AUTH_GOOGLE_SERVER_METADATA_URL =  os.getenv("ST_AUTH_GOOGLE_SERVER_METADATA_URL")
-ST_AUTH_COOKIE_SECRET =  os.getenv("ST_AUTH_COOKIE_SECRET")
 
 
 
@@ -88,6 +82,7 @@ def main():
 
     # Check if the user is logged in using Streamlit's experimental_user API
     # Note: st.experimental_user might become st.user in future Streamlit versions
+    st.user = st.get_user()  # This retrieves the user information if logged in
     if not st.user :
         st.markdown("<h1 class='header-text'>🔒 Advanced Resume & Job Description Analyzer</h1>", unsafe_allow_html=True)
         st.markdown("<p class='sub-header-text'>Please log in with your Google account to access the content.</p>", unsafe_allow_html=True)
