@@ -3,3 +3,4 @@ streamlit==1.46.1
 requests
 pypdf
 python-docx
+streamlit-oauth
