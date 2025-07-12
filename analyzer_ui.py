@@ -3,10 +3,9 @@ import streamlit as st
 import requests
 from text_extraction import extract_text_from_pdf, extract_text_from_docx
 import os
-#GCP_FUNCTION_URL = os.getenv('GCP_FUNCTION_URL_OPS')
-#FEEDBACK_BACKEND_URL = os.getenv('FEEDBACK_BACKEND_URL_OPS')
-GCP_FUNCTION_URL = 'https://agent-ops-911008082076.us-east1.run.app/analyze'
-FEEDBACK_BACKEND_URL = 'https://feedback-firestore-911008082076.europe-west1.run.app'
+GCP_FUNCTION_URL = os.getenv('GCP_FUNCTION_URL_OPS')
+FEEDBACK_BACKEND_URL = os.getenv('FEEDBACK_BACKEND_URL_OPS')
+
 def main_analyzer_app():
     """Contains the main application functionality, accessible after login."""
     #add user name in the header
