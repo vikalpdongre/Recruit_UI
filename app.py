@@ -165,7 +165,7 @@ def main():
     <li>📝 &nbsp; Seamlessly upload resumes in <strong style="color: #FF6347;"> &nbsp;PDF </strong>&nbsp; or &nbsp;<strong style="color: #4682B4;"> Word </strong>&nbsp; format.</li>
     <li>📄 &nbsp; Effortlessly upload job descriptions in <strong style="color: #FF6347;">&nbsp; PDF </strong>&nbsp; or &nbsp;<strong style="color: #4682B4;"> Word </strong>&nbsp; format.</li>
     <li>⚡ &nbsp; Receive &nbsp;<strong style="color: #28a745;"> instant, detailed analysis </strong>&nbsp; and matching scores.</li>
-    <li>💡 &nbsp; Get &nbsp; <strong style="color: #8A2BE2;"> personalized suggestions </strong> &nbsp; to optimize your resume.</li>
+    
 </ul>
             """,
             unsafe_allow_html=True
