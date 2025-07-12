@@ -9,7 +9,7 @@ def main():
     Handles user authentication flow using Google Identity Platform.
     """
 
-    st.set_page_config(page_title="Secure Streamlit App", page_icon="🔒", layout="centered")
+    st.set_page_config(page_title="Secure GetHire App", page_icon="🔒", layout="centered")
 
     st.markdown(
         """
