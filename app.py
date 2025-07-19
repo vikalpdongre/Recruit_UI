@@ -1,6 +1,6 @@
 import streamlit as st
 # import auth # Assuming 'auth' module handles Google Identity Platform specifics
-import analyzer_ui2 # Assuming this module contains the main application logic.
+import analyzer_ui # Assuming this module contains the main application logic.
                     # Note: This module is not provided in the current context,
                     # so the main_analyzer_app() function will be a placeholder.
 
