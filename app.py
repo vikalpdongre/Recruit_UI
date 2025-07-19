@@ -141,6 +141,8 @@ def main():
             border-color: #ffc107; /* Yellow border */
             color: #856404; /* Dark yellow text */
         }
+        
+    }
         </style>
         """,
         unsafe_allow_html=True
@@ -152,8 +154,7 @@ def main():
         st.markdown("<h1 class='header-text'>Welcome to GetHire AI!</h1>", unsafe_allow_html=True)
         st.markdown(
             "<p class='sub-header-text'>"
-            "Your intelligent assistant for crafting impactful resumes and tailoring them to perfect job descriptions. "
-            "Let's elevate your job application game! 🛫"
+            "The intelligent assistant tool to Elevate Your Recruitment Process  🛫"
             "</p>",
             unsafe_allow_html=True
         )
